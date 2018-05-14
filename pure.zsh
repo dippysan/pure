@@ -52,6 +52,12 @@ prompt_pure_check_cmd_exec_time() {
 	}
 }
 
+# set STATUS_COLOR: cyan for "insert", green for "normal" mode.
+prompt_purer_vim_mode() {
+  STATUS_COLOR="${${KEYMAP/vicmd/blue}/(main|viins)/green}"
+  prompt_pure_preprompt_render
+}
+
 prompt_pure_set_title() {
 	setopt localoptions noshwordsplit
 
@@ -125,7 +131,7 @@ prompt_pure_preprompt_render() {
 	local -a preprompt_parts
 
 	# Set the path.
-	preprompt_parts+=('%F{blue}%~%f')
+	preprompt_parts+=('%B%F{$STATUS_COLOR}%~%f%b')
 
 	# Add git branch and dirty status info.
 	typeset -gA prompt_pure_vcs_info
@@ -517,7 +523,11 @@ prompt_pure_state_setup() {
 		unset MATCH MBEGIN MEND
 	fi
 
-	# show username@host if logged in through SSH
+  # register custom function for vim-mode
+  zle -N zle-line-init prompt_purer_vim_mode
+  zle -N zle-keymap-select prompt_purer_vim_mode
+  
+  # show username@host if logged in through SSH
 	[[ -n $ssh_connection ]] && username='%F{242}%n@%m%f'
 
 	# show username@host if root, with username in white
